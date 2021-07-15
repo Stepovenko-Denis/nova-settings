@@ -9,7 +9,6 @@ use OptimistDigital\NovaSettings\Models\Settings;
 
 class NovaSettings extends Tool
 {
-    protected static $cache = [];
     protected static $fields = [];
     protected static $casts = [];
 
@@ -92,7 +91,6 @@ class NovaSettings extends Tool
     {
         static::$fields = [];
         static::$casts = [];
-        static::$cache = [];
     }
 
     public static function getCasts()
@@ -102,28 +100,18 @@ class NovaSettings extends Tool
 
     public static function getSetting($settingKey, $default = null)
     {
-        if (isset(static::$cache[$settingKey])) return static::$cache[$settingKey];
-        static::$cache[$settingKey] = static::getSettingsModel()::find($settingKey)->value ?? $default;
-        return static::$cache[$settingKey];
+        return static::getSettingsModel()::find($settingKey)->value ?? $default;
     }
 
     public static function getSettings(array $settingKeys = null)
     {
         if (!empty($settingKeys)) {
-            $hasMissingKeys = !empty(array_diff($settingKeys, array_keys(static::$cache)));
-
-            if (!$hasMissingKeys) return collect($settingKeys)->mapWithKeys(function ($settingKey) {
-                return [$settingKey => static::$cache[$settingKey]];
-            })->toArray();
-
             return static::getSettingsModel()::find($settingKeys)->map(function ($setting) {
-                static::$cache[$setting->key] = $setting->value;
                 return $setting;
             })->pluck('value', 'key')->toArray();
         }
 
         return static::getSettingsModel()::all()->map(function ($setting) {
-            static::$cache[$setting->key] = $setting->value;
             return $setting;
         })->pluck('value', 'key')->toArray();
     }
@@ -133,7 +121,6 @@ class NovaSettings extends Tool
         $setting = static::getSettingsModel()::firstOrCreate(['key' => $settingKey]);
         $setting->value = $value;
         $setting->save();
-        unset(static::$cache[$settingKey]);
         return $setting;
     }
 
