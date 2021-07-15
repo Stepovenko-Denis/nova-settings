@@ -1,5 +1,5 @@
 {
-  "name": "prime/nova-settings",
+  "name": "primestst/nova-settings",
   "description": "A Laravel Nova tool for editing custom settings using native Nova fields.",
   "keywords": [
     "laravel",
